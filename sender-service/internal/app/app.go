@@ -5,6 +5,7 @@ import (
 	"github.com/Entreeka/sender/internal/config"
 	msgGrpc "github.com/Entreeka/sender/internal/controller/grpc"
 	"github.com/Entreeka/sender/internal/controller/grpc/interceptor"
+	"github.com/Entreeka/sender/pkg/kafka"
 	"github.com/Entreeka/sender/pkg/logger"
 	pb "github.com/Entreeka/sender/proto/v1"
 	"google.golang.org/grpc"
@@ -12,6 +13,10 @@ import (
 )
 
 func Run(cfg *config.Config, log *logger.Logger) error {
+
+	kafkaProducer := kafka.NewProducer(log, cfg.Kafka.Brokers, cfg.Kafka.Topic)
+	defer kafkaProducer.Close()
+
 	opts := []grpc.ServerOption{
 		grpc.ChainUnaryInterceptor(
 			interceptor.LoggerUnaryInterceptorServer(log),
