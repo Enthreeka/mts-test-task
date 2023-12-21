@@ -12,7 +12,7 @@ import (
 )
 
 type ProducerMessage interface {
-	CreateHandler(message *entity.Message) error
+	CreateHandler(ctx context.Context, message *entity.Message) error
 }
 
 type messageHandler struct {
@@ -29,7 +29,7 @@ func NewMessageProducerHandler(log *logger.Logger, cfg *config.Config, kafkaProd
 	}
 }
 
-func (m *messageHandler) CreateHandler(message *entity.Message) error {
+func (m *messageHandler) CreateHandler(ctx context.Context, message *entity.Message) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
