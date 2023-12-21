@@ -1,35 +1,46 @@
 package config
 
 import (
-	"github.com/joho/godotenv"
+	"encoding/json"
 	"os"
 )
 
 type (
 	Config struct {
-		Postgres Postgres `json:"postgres"`
-		Kafka    Kafka    `json:"kafka"`
-	}
-
-	Postgres struct {
-		URL string `json:"url"`
+		Kafka Kafka `json:"kafka"`
 	}
 
 	Kafka struct {
+		Topic   string   `json:"topic"`
+		Brokers []string `json:"brokers"`
 	}
 )
 
 func New() (*Config, error) {
-	err := godotenv.Load("configs/app.env")
+	cfgKafka, err := KafkaConfig()
 	if err != nil {
 		return nil, err
 	}
 
 	config := &Config{
-		Postgres: Postgres{
-			URL: os.Getenv("POSTGRES_URL"),
-		},
-		Kafka: Kafka{},
+		Kafka: *cfgKafka,
+	}
+
+	return config, nil
+}
+
+func KafkaConfig() (*Kafka, error) {
+	file, err := os.Open("configs/config.json")
+	if err != nil {
+		return nil, err
+	}
+
+	defer file.Close()
+
+	decoder := json.NewDecoder(file)
+	config := &Kafka{}
+	if err := decoder.Decode(config); err != nil {
+		return nil, err
 	}
 
 	return config, nil
