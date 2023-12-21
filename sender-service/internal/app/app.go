@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/Entreeka/sender/internal/config"
 	msgGrpc "github.com/Entreeka/sender/internal/controller/grpc"
+	"github.com/Entreeka/sender/internal/controller/grpc/interceptor"
 	"github.com/Entreeka/sender/pkg/logger"
 	pb "github.com/Entreeka/sender/proto/v1"
 	"google.golang.org/grpc"
@@ -11,7 +12,13 @@ import (
 )
 
 func Run(cfg *config.Config, log *logger.Logger) error {
-	s := grpc.NewServer()
+	opts := []grpc.ServerOption{
+		grpc.ChainUnaryInterceptor(
+			interceptor.LoggerUnaryInterceptorServer(log),
+		),
+	}
+
+	s := grpc.NewServer(opts...)
 	urlGRPCServer := msgGrpc.NewMessageHandler(log)
 
 	pb.RegisterMessageServiceServer(s, urlGRPCServer)
