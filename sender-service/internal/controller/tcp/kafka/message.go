@@ -39,7 +39,8 @@ func (m *messageHandler) CreateHandler(ctx context.Context, message *entity.Mess
 	}
 
 	msg := kafka.Message{
-		Topic: m.cfg.Kafka.Topic,
+		//Topic: m.cfg.Kafka.Topic,
+		Key:   []byte(m.cfg.Kafka.Topic),
 		Value: msgBytes,
 		Time:  time.Now().UTC(),
 	}

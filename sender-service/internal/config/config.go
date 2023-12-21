@@ -1,6 +1,7 @@
 package config
 
 import (
+	"encoding/json"
 	"github.com/joho/godotenv"
 	"os"
 )
@@ -27,13 +28,33 @@ func New() (*Config, error) {
 		return nil, err
 	}
 
+	cfgKafka, err := KafkaConfig()
+	if err != nil {
+		return nil, err
+	}
+
 	config := &Config{
 		GRPCServer: GRPCServer{
 			Port: os.Getenv("GRPC_SERVER_PORT"),
 		},
-		Kafka: Kafka{
-			Topic: os.Getenv("KAFKA_TOPIC"),
-		},
+		Kafka: *cfgKafka,
+	}
+
+	return config, nil
+}
+
+func KafkaConfig() (*Kafka, error) {
+	file, err := os.Open("configs/config.json")
+	if err != nil {
+		return nil, err
+	}
+
+	defer file.Close()
+
+	decoder := json.NewDecoder(file)
+	config := &Kafka{}
+	if err := decoder.Decode(config); err != nil {
+		return nil, err
 	}
 
 	return config, nil

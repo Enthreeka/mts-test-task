@@ -1,0 +1,6 @@
+{
+  "topic": "test",
+  "brokers": [
+      "localhost:9092"
+  ]
+}
