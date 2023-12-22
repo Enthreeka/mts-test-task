@@ -13,11 +13,12 @@ import (
 )
 
 func Run(cfg *config.Config, log *logger.Logger) error {
-
 	psql, err := postgres.New(context.Background(), 5, cfg.Postgres.URL)
 	if err != nil {
 		log.Fatal("failed to connect PostgreSQL: %v", err)
 	}
+
+	producer := kafka.NewProducer(log, cfg.Kafka.Brokers, cfg.Kafka.TopicError)
 
 	conn, err := kafka.New(context.Background())
 	if err != nil {
@@ -35,8 +36,8 @@ func Run(cfg *config.Config, log *logger.Logger) error {
 	messageRepo := repo.NewMessageRepo(psql)
 	messageService := service.NewMessageService(messageRepo)
 
-	handler := kafkaClient.NewMessageConsumerHandler(messageService, log, cfg)
-	log.Info("connected")
+	errorProducer := kafkaClient.NewErrorProducerHandler(log, cfg, producer)
+	handler := kafkaClient.NewMessageConsumerHandler(messageService, errorProducer, log, cfg)
 	wg := &sync.WaitGroup{}
 
 	wg.Add(1)

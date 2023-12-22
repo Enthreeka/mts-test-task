@@ -21,15 +21,18 @@ func NewMessageService(messageRepo repo.Message) Message {
 
 func (m *messageService) Create(ctx context.Context, message *entity.Message) error {
 	err := m.messageRepo.Create(ctx, message)
-	if err == pgx.ErrNoRows {
-		return apperror.ErrNoRows
-	}
-	errCode := pgxError.ErrorCode(err)
-	if errCode == pgxError.ForeignKeyViolation {
-		return apperror.ErrForeignKeyViolation
-	}
-	if errCode == pgxError.UniqueViolation {
-		return apperror.ErrUniqueViolation
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return apperror.ErrNoRows
+		}
+		errCode := pgxError.ErrorCode(err)
+		if errCode == pgxError.ForeignKeyViolation {
+			return apperror.ErrForeignKeyViolation
+		}
+		if errCode == pgxError.UniqueViolation {
+			return apperror.ErrUniqueViolation
+		}
+		return err
 	}
 
 	return nil

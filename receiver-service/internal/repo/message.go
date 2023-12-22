@@ -18,7 +18,7 @@ func NewMessageRepo(pg *postgres.Postgres) Message {
 }
 
 func (m *messageRepo) Create(ctx context.Context, message *entity.Message) error {
-	query := `INSERT INTO message (msg,created_time) VALUES ($1,$2)`
+	query := `INSERT INTO message (msg,create_time) VALUES ($1,$2)`
 
 	tx, err := m.Pool.BeginTx(ctx, pgx.TxOptions{})
 

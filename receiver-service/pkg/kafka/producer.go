@@ -17,7 +17,6 @@ type producer struct {
 	w       *kafka.Writer
 }
 
-// TODO make options
 func NewProducer(log *logger.Logger, brokers []string, topic string) *producer {
 	return &producer{
 		log:     log,

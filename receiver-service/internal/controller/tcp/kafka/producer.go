@@ -3,7 +3,6 @@ package kafka
 import (
 	"context"
 	"encoding/json"
-	"github.com/Entreeka/receiver/internal/apperror"
 	"github.com/Entreeka/receiver/internal/config"
 	kafkaClient "github.com/Entreeka/receiver/pkg/kafka"
 	"github.com/Entreeka/receiver/pkg/logger"
@@ -11,8 +10,8 @@ import (
 	"time"
 )
 
-type ProducerErrorError interface {
-	CreateHandler(ctx context.Context, msgErr apperror.AppError) error
+type ProducerError interface {
+	WriteError(ctx context.Context, msgErr map[string]string) error
 }
 
 type errorHandler struct {
@@ -29,7 +28,7 @@ func NewErrorProducerHandler(log *logger.Logger, cfg *config.Config, kafkaProduc
 	}
 }
 
-func (m *errorHandler) CreateHandler(ctx context.Context, msgErr apperror.AppError) error {
+func (m *errorHandler) WriteError(ctx context.Context, msgErr map[string]string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 

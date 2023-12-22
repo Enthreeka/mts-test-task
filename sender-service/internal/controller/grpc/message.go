@@ -27,8 +27,6 @@ func NewMessageHandler(log *logger.Logger, producer kafka.ProducerMessage) pb.Me
 }
 
 func (m *messageHandler) CreateMessage(ctx context.Context, req *pb.MessageRequest) (*pb.MessageResponse, error) {
-	start := time.Now()
-
 	if req.Message == "" {
 		m.log.Error("req.Message == \"\"")
 		return nil, status.Errorf(apperror.ParseGRPCErrStatusCode(apperror.ErrEmptyMessage), "CreateMessage: %v", apperror.ErrEmptyMessage)
@@ -42,8 +40,6 @@ func (m *messageHandler) CreateMessage(ctx context.Context, req *pb.MessageReque
 		return nil, status.Errorf(apperror.ParseGRPCErrStatusCode(err), "CreateMessage: %v", err)
 	}
 
-	end := time.Since(start)
-	m.log.Info("", end)
 	return m.messageModelToProto(msg), nil
 }
 

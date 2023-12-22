@@ -6,5 +6,5 @@ import (
 )
 
 func New(ctx context.Context) (*kafka.Conn, error) {
-	return kafka.DialContext(ctx, "tcp", "broker:29092")
+	return kafka.DialContext(ctx, "tcp", "localhost:9092")
 }
