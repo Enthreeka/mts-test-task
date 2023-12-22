@@ -2,6 +2,7 @@ package config
 
 import (
 	"encoding/json"
+	"github.com/joho/godotenv"
 	"os"
 )
 
@@ -23,6 +24,11 @@ type (
 )
 
 func New() (*Config, error) {
+	err := godotenv.Load("configs/app.env")
+	if err != nil {
+		return nil, err
+	}
+
 	cfgKafka, err := KafkaConfig()
 	if err != nil {
 		return nil, err

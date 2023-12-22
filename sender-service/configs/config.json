@@ -2,6 +2,6 @@
   "topic": "test",
   "error_topic": "error",
   "brokers": [
-    "localhost:9092"
+    "broker:29092"
   ]
 }
