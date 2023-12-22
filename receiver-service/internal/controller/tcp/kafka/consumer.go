@@ -26,12 +26,18 @@ type messageHandler struct {
 }
 
 func NewMessageConsumerHandler(msgService service.Message, kafkaProducer ProducerError, log *logger.Logger, cfg *config.Config) *messageHandler {
+	kafkaConsumer := kafkaClient.NewKafkaReader(cfg.Kafka.Brokers, cfg.Kafka.Topic)
+	err := kafkaConsumer.SetOffset(-1)
+	if err != nil {
+		log.Error("SetOffset: %v", err)
+	}
+
 	return &messageHandler{
 		msgService:    msgService,
 		kafkaProducer: kafkaProducer,
 		log:           log,
 		cfg:           cfg,
-		kafkaConsumer: kafkaClient.NewKafkaReader(cfg.Kafka.Brokers, cfg.Kafka.Topic),
+		kafkaConsumer: kafkaConsumer,
 	}
 }
 
@@ -51,7 +57,8 @@ func (m *messageHandler) Consumer(ctx context.Context, wg *sync.WaitGroup) {
 				continue
 			}
 
-			m.log.Info("received: %s, %s", msg.Topic, string(msg.Value))
+			//m.log.Info("received: %s, %s", msg.Topic, string(msg.Value))
+			m.log.Info("message at topic/partition/offset %v/%v/%v: %s = %s\n", msg.Topic, msg.Partition, msg.Offset, string(msg.Key), string(msg.Value))
 			m.createMessage(ctx, &msg)
 		}
 	}
