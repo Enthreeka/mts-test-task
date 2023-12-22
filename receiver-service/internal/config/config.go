@@ -7,12 +7,18 @@ import (
 
 type (
 	Config struct {
-		Kafka Kafka `json:"kafka"`
+		Kafka    Kafka    `json:"kafka"`
+		Postgres Postgres `json:"postgres"`
+	}
+
+	Postgres struct {
+		URL string `json:"url"`
 	}
 
 	Kafka struct {
-		Topic   string   `json:"topic"`
-		Brokers []string `json:"brokers"`
+		Topic      string   `json:"topic"`
+		TopicError string   `json:"topic_error"`
+		Brokers    []string `json:"brokers"`
 	}
 )
 
@@ -23,6 +29,9 @@ func New() (*Config, error) {
 	}
 
 	config := &Config{
+		Postgres: Postgres{
+			URL: os.Getenv("POSTGRES_URL"),
+		},
 		Kafka: *cfgKafka,
 	}
 
