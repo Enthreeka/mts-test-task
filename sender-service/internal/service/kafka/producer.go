@@ -11,6 +11,7 @@ import (
 	"time"
 )
 
+//go:generate mockgen -source producer.go -destination mock/pg_repository_mock.go -package mock
 type MessageProducerService interface {
 	CreateHandler(ctx context.Context, message *entity.Message) error
 }
