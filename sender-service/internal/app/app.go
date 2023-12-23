@@ -11,6 +11,7 @@ import (
 	"github.com/Entreeka/sender/pkg/kafka"
 	"github.com/Entreeka/sender/pkg/logger"
 	pb "github.com/Entreeka/sender/proto/v1"
+	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 	"google.golang.org/grpc"
 	"net"
 	"os"
@@ -45,6 +46,7 @@ func Run(cfg *config.Config, log *logger.Logger) error {
 	opts := []grpc.ServerOption{
 		grpc.ChainUnaryInterceptor(
 			interceptor.LoggerUnaryInterceptorServer(log),
+			grpc_recovery.UnaryServerInterceptor(),
 		),
 	}
 

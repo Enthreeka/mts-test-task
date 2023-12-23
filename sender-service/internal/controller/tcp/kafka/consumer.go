@@ -21,7 +21,7 @@ type consumerErrorHandler struct {
 
 func NewMessageConsumerHandler(log *logger.Logger, cfg *config.Config) *consumerErrorHandler {
 	kafkaConsumer := kafkaClient.NewKafkaReader(cfg.Kafka.Brokers, cfg.Kafka.TopicError)
-	err := kafkaConsumer.SetOffset(-1)
+	err := kafkaConsumer.SetOffset(0)
 	if err != nil {
 		log.Error("SetOffset: %v", err)
 	}
@@ -34,6 +34,12 @@ func NewMessageConsumerHandler(log *logger.Logger, cfg *config.Config) *consumer
 }
 
 func (c *consumerErrorHandler) ReadError(ctx context.Context) {
+	defer func() {
+		if err := c.kafkaConsumer.Close(); err != nil {
+			c.log.Error("kafkaConsumer.Close: %v", err)
+		}
+	}()
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -45,7 +51,7 @@ func (c *consumerErrorHandler) ReadError(ctx context.Context) {
 				continue
 			}
 
-			c.log.Error("Topic:%s, msg:%s", msg.Topic, string(msg.Value))
+			c.log.Error("[SENDER-SERVICE] Topic:%s, msg:%s", msg.Topic, string(msg.Value))
 		}
 	}
 }

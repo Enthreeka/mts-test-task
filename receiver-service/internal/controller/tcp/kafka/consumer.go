@@ -28,7 +28,7 @@ type messageHandler struct {
 
 func NewMessageConsumerHandler(msgService service.Message, kafkaProducer kafkaService.ErrorProducerService, log *logger.Logger, cfg *config.Config) *messageHandler {
 	kafkaConsumer := kafkaClient.NewKafkaReader(cfg.Kafka.Brokers, cfg.Kafka.Topic)
-	err := kafkaConsumer.SetOffset(-1)
+	err := kafkaConsumer.SetOffset(0)
 	if err != nil {
 		log.Error("SetOffset: %v", err)
 	}
@@ -43,7 +43,12 @@ func NewMessageConsumerHandler(msgService service.Message, kafkaProducer kafkaSe
 }
 
 func (m *messageHandler) Consumer(ctx context.Context, wg *sync.WaitGroup) {
-	defer wg.Done()
+	defer func() {
+		wg.Done()
+		if err := m.kafkaConsumer.Close(); err != nil {
+			m.log.Error("kafkaConsumer.Close: %v", err)
+		}
+	}()
 
 	for {
 		select {
@@ -58,7 +63,9 @@ func (m *messageHandler) Consumer(ctx context.Context, wg *sync.WaitGroup) {
 				continue
 			}
 
-			m.log.Info("message at topic/partition/offset %v/%v/%v: %s = %s\n", msg.Topic, msg.Partition, msg.Offset, string(msg.Key), string(msg.Value))
+			m.log.Info("[RECEIVER-SERVICE] get message at topic/partition/offset"+
+				" %v/%v/%v: %s = %s\n", msg.Topic, msg.Partition, msg.Offset, string(msg.Key), string(msg.Value))
+
 			m.createMessage(ctx, &msg)
 		}
 	}
@@ -73,9 +80,12 @@ func (m *messageHandler) createMessage(ctx context.Context, msg *kafka.Message) 
 			m.log.Error("CommitMessages: %v", err)
 		}
 
-		m.kafkaProducer.WriteError(ctx, map[string]interface{}{
+		if err = m.kafkaProducer.WriteError(ctx, map[string]interface{}{
 			"error": err.Error(),
-		})
+		}); err != nil {
+			m.log.Error("WriteError: %v", err)
+		}
+
 		return
 	}
 
@@ -86,10 +96,13 @@ func (m *messageHandler) createMessage(ctx context.Context, msg *kafka.Message) 
 			m.log.Error("CommitMessages: %v", err)
 		}
 
-		m.kafkaProducer.WriteError(ctx, map[string]interface{}{
+		if err = m.kafkaProducer.WriteError(ctx, map[string]interface{}{
 			"error":    err.Error(),
 			"msg_uuid": messageModel.MsgUUID,
-		})
+		}); err != nil {
+			m.log.Error("WriteError: %v", err)
+		}
+
 		return
 	}
 }

@@ -53,7 +53,7 @@ func (m *messageHandler) messageModelToProto(message *entity.Message) *pb.Messag
 	return &pb.MessageResponse{
 		Message:     message.Msg,
 		CreatedTime: timestamppb.New(message.CreatedTime),
-		Id:          message.MsgUUID.String(),
+		ID:          message.MsgUUID.String(),
 	}
 }
 
