@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"github.com/Entreeka/receiver/internal/apperror"
 	"github.com/Entreeka/receiver/internal/entity"
 	"github.com/Entreeka/receiver/internal/repo/mock"
 	"github.com/golang/mock/gomock"
@@ -36,6 +37,20 @@ func TestNewMessageService(t *testing.T) {
 				r.EXPECT().Create(context.Background(), gomock.Eq(message)).Return(nil)
 			},
 			wantErr: nil,
+		},
+		{
+			name: "unique constraint",
+			args: args{
+				message: &entity.Message{
+					Msg:         "test",
+					MsgUUID:     uuid.New(),
+					CreatedTime: time.Now(),
+				},
+			},
+			mockBehavior: func(r *mock.MockMessage, message *entity.Message) {
+				r.EXPECT().Create(context.Background(), gomock.Eq(message)).Return(apperror.ErrUniqueViolation)
+			},
+			wantErr: apperror.ErrUniqueViolation,
 		},
 	}
 

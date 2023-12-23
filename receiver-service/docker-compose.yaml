@@ -6,7 +6,12 @@ services:
     container_name: receiver-service
     build: ./
     depends_on:
-      - db
+      broker:
+        condition: service_healthy
+      db:
+        condition: service_healthy
+#    depends_on:
+#      - db
 
   db:
     image: postgres:15.2
@@ -21,10 +26,11 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_DB=mts
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER}" ]
+      test: [ "CMD-SHELL", "pg_isready -q -U postgres -d postgres" ]
       interval: 5s
-      timeout: 5s
-      retries: 5
+      timeout: 30s
+      retries: 10
+      start_period: 30s
 
 
 volumes:
