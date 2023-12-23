@@ -49,11 +49,11 @@ func (m *messageHandler) CreateMessage(ctx context.Context, req *pb.MessageReque
 }
 
 func (m *messageHandler) messageModelToProto(message *entity.Message) *pb.MessageResponse {
-	fmt.Println(message)
+	fmt.Println(message.MsgUUID.String())
 	return &pb.MessageResponse{
 		Message:     message.Msg,
-		Id:          message.MsgUUID.String(),
 		CreatedTime: timestamppb.New(message.CreatedTime),
+		Id:          message.MsgUUID.String(),
 	}
 }
 

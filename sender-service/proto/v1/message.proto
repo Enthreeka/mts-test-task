@@ -18,4 +18,5 @@ message MessageResponse{
   string message = 1;
   google.protobuf.Timestamp created_time = 2;
   string id = 3;
+
 }
