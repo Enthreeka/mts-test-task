@@ -20,6 +20,7 @@ type (
 		Topic      string   `json:"topic"`
 		TopicError string   `json:"topic_error"`
 		Brokers    []string `json:"brokers"`
+		GroupID    string   `json:"group_id"`
 	}
 )
 

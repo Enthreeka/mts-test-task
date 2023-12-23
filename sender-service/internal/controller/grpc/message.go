@@ -2,7 +2,6 @@ package grpc
 
 import (
 	"context"
-	"fmt"
 	"github.com/Entreeka/sender/internal/apperror"
 	"github.com/Entreeka/sender/internal/entity"
 	"github.com/Entreeka/sender/internal/service/kafka"
@@ -49,7 +48,6 @@ func (m *messageHandler) CreateMessage(ctx context.Context, req *pb.MessageReque
 }
 
 func (m *messageHandler) messageModelToProto(message *entity.Message) *pb.MessageResponse {
-	fmt.Println(message.MsgUUID.String())
 	return &pb.MessageResponse{
 		Message:     message.Msg,
 		CreatedTime: timestamppb.New(message.CreatedTime),

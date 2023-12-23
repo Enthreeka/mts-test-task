@@ -76,9 +76,6 @@ func (m *messageHandler) createMessage(ctx context.Context, msg *kafka.Message) 
 	err := json.Unmarshal(msg.Value, messageModel)
 	if err != nil {
 		m.log.Error("Unmarshal: %v", err)
-		if err := m.kafkaConsumer.CommitMessages(ctx, *msg); err != nil {
-			m.log.Error("CommitMessages: %v", err)
-		}
 
 		if err = m.kafkaProducer.WriteError(ctx, map[string]interface{}{
 			"error": err.Error(),
@@ -92,9 +89,6 @@ func (m *messageHandler) createMessage(ctx context.Context, msg *kafka.Message) 
 	err = m.msgService.Create(ctx, messageModel)
 	if err != nil {
 		m.log.Error("msgService.Create: %v", err)
-		if err := m.kafkaConsumer.CommitMessages(ctx, *msg); err != nil {
-			m.log.Error("CommitMessages: %v", err)
-		}
 
 		if err = m.kafkaProducer.WriteError(ctx, map[string]interface{}{
 			"error":    err.Error(),

@@ -1,7 +1,8 @@
 {
-  "topic": "test",
+  "topic": "main",
   "topic_error": "error",
   "brokers": [
     "broker:29092"
-  ]
+  ],
+  "group_id": "consumer-group-id"
 }
