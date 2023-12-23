@@ -1,5 +1,3 @@
-
-
 CREATE TABLE IF NOT EXISTS message(
     id int generated always as identity,
     msg_uuid uuid not null,
