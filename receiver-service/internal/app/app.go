@@ -6,6 +6,7 @@ import (
 	kafkaClient "github.com/Entreeka/receiver/internal/controller/tcp/kafka"
 	"github.com/Entreeka/receiver/internal/repo"
 	"github.com/Entreeka/receiver/internal/service"
+	kafkaService "github.com/Entreeka/receiver/internal/service/kafka"
 	"github.com/Entreeka/receiver/pkg/kafka"
 	"github.com/Entreeka/receiver/pkg/logger"
 	"github.com/Entreeka/receiver/pkg/postgres"
@@ -36,8 +37,8 @@ func Run(cfg *config.Config, log *logger.Logger) error {
 	messageRepo := repo.NewMessageRepo(psql)
 	messageService := service.NewMessageService(messageRepo)
 
-	errorProducer := kafkaClient.NewErrorProducerHandler(log, cfg, producer)
-	handler := kafkaClient.NewMessageConsumerHandler(messageService, errorProducer, log, cfg)
+	errProducerService := kafkaService.NewErrorProducerService(log, cfg, producer)
+	handler := kafkaClient.NewMessageConsumerHandler(messageService, errProducerService, log, cfg)
 	wg := &sync.WaitGroup{}
 
 	wg.Add(1)

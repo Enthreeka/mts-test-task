@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 	"github.com/Entreeka/sender/internal/apperror"
-	"github.com/Entreeka/sender/internal/controller/tcp/kafka"
 	"github.com/Entreeka/sender/internal/entity"
+	"github.com/Entreeka/sender/internal/service/kafka"
 	"github.com/Entreeka/sender/pkg/logger"
 	pb "github.com/Entreeka/sender/proto/v1"
 	"github.com/google/uuid"
@@ -16,12 +16,12 @@ import (
 
 type messageHandler struct {
 	log      *logger.Logger
-	producer kafka.ProducerMessage
+	producer kafka.MessageProducerService
 
 	pb.UnimplementedMessageServiceServer
 }
 
-func NewMessageHandler(log *logger.Logger, producer kafka.ProducerMessage) pb.MessageServiceServer {
+func NewMessageHandler(log *logger.Logger, producer kafka.MessageProducerService) pb.MessageServiceServer {
 	return &messageHandler{
 		log:      log,
 		producer: producer,

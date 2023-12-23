@@ -11,25 +11,25 @@ import (
 	"time"
 )
 
-type ProducerMessage interface {
+type MessageProducerService interface {
 	CreateHandler(ctx context.Context, message *entity.Message) error
 }
 
-type messageHandler struct {
+type messageProducerService struct {
 	log           *logger.Logger
 	cfg           *config.Config
 	kafkaProducer kafkaClient.Producer
 }
 
-func NewMessageProducerHandler(log *logger.Logger, cfg *config.Config, kafkaProducer kafkaClient.Producer) *messageHandler {
-	return &messageHandler{
+func NewMessageProducerHandler(log *logger.Logger, cfg *config.Config, kafkaProducer kafkaClient.Producer) *messageProducerService {
+	return &messageProducerService{
 		log:           log,
 		cfg:           cfg,
 		kafkaProducer: kafkaProducer,
 	}
 }
 
-func (m *messageHandler) CreateHandler(ctx context.Context, message *entity.Message) error {
+func (m *messageProducerService) CreateHandler(ctx context.Context, message *entity.Message) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 

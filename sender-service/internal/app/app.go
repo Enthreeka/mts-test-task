@@ -7,6 +7,7 @@ import (
 	msgGrpc "github.com/Entreeka/sender/internal/controller/grpc"
 	"github.com/Entreeka/sender/internal/controller/grpc/interceptor"
 	kafkaHandler "github.com/Entreeka/sender/internal/controller/tcp/kafka"
+	kafkaService "github.com/Entreeka/sender/internal/service/kafka"
 	"github.com/Entreeka/sender/pkg/kafka"
 	"github.com/Entreeka/sender/pkg/logger"
 	pb "github.com/Entreeka/sender/proto/v1"
@@ -39,7 +40,7 @@ func Run(cfg *config.Config, log *logger.Logger) error {
 
 	go errorHandler.ReadError(ctx)
 
-	msgHandler := kafkaHandler.NewMessageProducerHandler(log, cfg, kafkaProducer)
+	msgService := kafkaService.NewMessageProducerHandler(log, cfg, kafkaProducer)
 
 	opts := []grpc.ServerOption{
 		grpc.ChainUnaryInterceptor(
@@ -48,7 +49,7 @@ func Run(cfg *config.Config, log *logger.Logger) error {
 	}
 
 	s := grpc.NewServer(opts...)
-	urlGRPCServer := msgGrpc.NewMessageHandler(log, msgHandler)
+	urlGRPCServer := msgGrpc.NewMessageHandler(log, msgService)
 
 	pb.RegisterMessageServiceServer(s, urlGRPCServer)
 

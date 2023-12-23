@@ -6,6 +6,7 @@ import (
 	"github.com/Entreeka/receiver/internal/config"
 	"github.com/Entreeka/receiver/internal/entity"
 	"github.com/Entreeka/receiver/internal/service"
+	kafkaService "github.com/Entreeka/receiver/internal/service/kafka"
 	kafkaClient "github.com/Entreeka/receiver/pkg/kafka"
 	"github.com/Entreeka/receiver/pkg/logger"
 	"github.com/segmentio/kafka-go"
@@ -22,10 +23,10 @@ type messageHandler struct {
 	cfg        *config.Config
 
 	kafkaConsumer *kafka.Reader
-	kafkaProducer ProducerError
+	kafkaProducer kafkaService.ErrorProducerService
 }
 
-func NewMessageConsumerHandler(msgService service.Message, kafkaProducer ProducerError, log *logger.Logger, cfg *config.Config) *messageHandler {
+func NewMessageConsumerHandler(msgService service.Message, kafkaProducer kafkaService.ErrorProducerService, log *logger.Logger, cfg *config.Config) *messageHandler {
 	kafkaConsumer := kafkaClient.NewKafkaReader(cfg.Kafka.Brokers, cfg.Kafka.Topic)
 	err := kafkaConsumer.SetOffset(-1)
 	if err != nil {
@@ -77,7 +78,7 @@ func (m *messageHandler) createMessage(ctx context.Context, msg *kafka.Message) 
 		})
 		return
 	}
-	
+
 	err = m.msgService.Create(ctx, messageModel)
 	if err != nil {
 		m.log.Error("msgService.Create: %v", err)
