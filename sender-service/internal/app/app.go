@@ -12,13 +12,19 @@ import (
 	pb "github.com/Entreeka/sender/proto/v1"
 	"google.golang.org/grpc"
 	"net"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 func Run(cfg *config.Config, log *logger.Logger) error {
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
+	defer cancel()
+
 	kafkaProducer := kafka.NewProducer(log, cfg.Kafka.Brokers, cfg.Kafka.Topic)
 	defer kafkaProducer.Close()
 
-	conn, err := kafka.New(context.Background())
+	conn, err := kafka.New(ctx)
 	if err != nil {
 		log.Fatal("failed to dial leader: %v", err)
 	}
@@ -31,7 +37,7 @@ func Run(cfg *config.Config, log *logger.Logger) error {
 
 	errorHandler := kafkaHandler.NewMessageConsumerHandler(log, cfg)
 
-	go errorHandler.ReadError(context.Background())
+	go errorHandler.ReadError(ctx)
 
 	msgHandler := kafkaHandler.NewMessageProducerHandler(log, cfg, kafkaProducer)
 
@@ -52,11 +58,14 @@ func Run(cfg *config.Config, log *logger.Logger) error {
 		return err
 	}
 
-	log.Info("Starting gRPC listener on port :%s", cfg.GRPCServer.Port)
-	if err := s.Serve(lis); err != nil {
-		log.Fatal("failed to serve: %v", err)
-		return err
-	}
+	go func() {
+		log.Info("Starting gRPC listener on port :%s", cfg.GRPCServer.Port)
+		if err := s.Serve(lis); err != nil {
+			log.Fatal("failed to serve: %v", err)
+		}
+	}()
 
+	<-ctx.Done()
+	s.GracefulStop()
 	return nil
 }

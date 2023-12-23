@@ -38,7 +38,6 @@ func (c *consumerErrorHandler) ReadError(ctx context.Context) {
 		select {
 		case <-ctx.Done():
 			return
-
 		default:
 			msg, err := c.kafkaConsumer.FetchMessage(ctx)
 			if err != nil {
