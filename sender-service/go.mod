@@ -3,6 +3,7 @@ module github.com/Entreeka/sender
 go 1.21.3
 
 require (
+	github.com/google/uuid v1.3.1
 	github.com/joho/godotenv v1.5.1
 	github.com/segmentio/kafka-go v0.4.47
 	go.uber.org/zap v1.26.0

@@ -1,8 +1,12 @@
 package entity
 
-import "time"
+import (
+	"github.com/google/uuid"
+	"time"
+)
 
 type Message struct {
 	Msg         string    `json:"message"`
-	CreatedTime time.Time `json:"creeate_time"`
+	MsgUUID     uuid.UUID `json:"msg_id"`
+	CreatedTime time.Time `json:"created_time"`
 }

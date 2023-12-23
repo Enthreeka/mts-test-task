@@ -57,7 +57,6 @@ func (m *messageHandler) Consumer(ctx context.Context, wg *sync.WaitGroup) {
 				continue
 			}
 
-			//m.log.Info("received: %s, %s", msg.Topic, string(msg.Value))
 			m.log.Info("message at topic/partition/offset %v/%v/%v: %s = %s\n", msg.Topic, msg.Partition, msg.Offset, string(msg.Key), string(msg.Value))
 			m.createMessage(ctx, &msg)
 		}
@@ -73,10 +72,12 @@ func (m *messageHandler) createMessage(ctx context.Context, msg *kafka.Message) 
 			m.log.Error("CommitMessages: %v", err)
 		}
 
-		m.kafkaProducer.WriteError(ctx, map[string]string{"error": err.Error()})
+		m.kafkaProducer.WriteError(ctx, map[string]interface{}{
+			"error": err.Error(),
+		})
 		return
 	}
-
+	
 	err = m.msgService.Create(ctx, messageModel)
 	if err != nil {
 		m.log.Error("msgService.Create: %v", err)
@@ -84,7 +85,10 @@ func (m *messageHandler) createMessage(ctx context.Context, msg *kafka.Message) 
 			m.log.Error("CommitMessages: %v", err)
 		}
 
-		m.kafkaProducer.WriteError(ctx, map[string]string{"error": err.Error()})
+		m.kafkaProducer.WriteError(ctx, map[string]interface{}{
+			"error":    err.Error(),
+			"msg_uuid": messageModel.MsgUUID,
+		})
 		return
 	}
 }

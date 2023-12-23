@@ -2,11 +2,13 @@ package grpc
 
 import (
 	"context"
+	"fmt"
 	"github.com/Entreeka/sender/internal/apperror"
 	"github.com/Entreeka/sender/internal/controller/tcp/kafka"
 	"github.com/Entreeka/sender/internal/entity"
 	"github.com/Entreeka/sender/pkg/logger"
 	pb "github.com/Entreeka/sender/proto/v1"
+	"github.com/google/uuid"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"time"
@@ -34,6 +36,9 @@ func (m *messageHandler) CreateMessage(ctx context.Context, req *pb.MessageReque
 
 	msg := m.messageProtoToModel(req)
 
+	msgUUID := uuid.New()
+	msg.MsgUUID = msgUUID
+
 	err := m.producer.CreateHandler(ctx, msg)
 	if err != nil {
 		m.log.Error("producer.CreateHandler: %v", err)
@@ -44,8 +49,10 @@ func (m *messageHandler) CreateMessage(ctx context.Context, req *pb.MessageReque
 }
 
 func (m *messageHandler) messageModelToProto(message *entity.Message) *pb.MessageResponse {
+	fmt.Println(message)
 	return &pb.MessageResponse{
 		Message:     message.Msg,
+		Id:          message.MsgUUID.String(),
 		CreatedTime: timestamppb.New(message.CreatedTime),
 	}
 }

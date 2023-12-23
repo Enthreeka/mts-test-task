@@ -17,8 +17,9 @@ type (
 	}
 
 	Kafka struct {
-		Topic   string   `json:"topic"`
-		Brokers []string `json:"brokers"`
+		Topic      string   `json:"topic"`
+		TopicError string   `json:"topic_error"`
+		Brokers    []string `json:"brokers"`
 	}
 )
 

@@ -29,6 +29,10 @@ func Run(cfg *config.Config, log *logger.Logger) error {
 	}
 	log.Info("kafka connected to brokers: %+v", brokers)
 
+	errorHandler := kafkaHandler.NewMessageConsumerHandler(log, cfg)
+
+	go errorHandler.ReadError(context.Background())
+
 	msgHandler := kafkaHandler.NewMessageProducerHandler(log, cfg, kafkaProducer)
 
 	opts := []grpc.ServerOption{

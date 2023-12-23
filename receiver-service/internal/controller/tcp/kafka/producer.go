@@ -11,7 +11,7 @@ import (
 )
 
 type ProducerError interface {
-	WriteError(ctx context.Context, msgErr map[string]string) error
+	WriteError(ctx context.Context, msgErr map[string]interface{}) error
 }
 
 type errorHandler struct {
@@ -28,7 +28,7 @@ func NewErrorProducerHandler(log *logger.Logger, cfg *config.Config, kafkaProduc
 	}
 }
 
-func (m *errorHandler) WriteError(ctx context.Context, msgErr map[string]string) error {
+func (m *errorHandler) WriteError(ctx context.Context, msgErr map[string]interface{}) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
