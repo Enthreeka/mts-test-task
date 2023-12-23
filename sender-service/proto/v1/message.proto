@@ -17,5 +17,5 @@ message MessageRequest{
 message MessageResponse{
   string message = 1;
   google.protobuf.Timestamp created_time = 2;
-  string ID = 3;
+  string msgUUID = 3;
 }
