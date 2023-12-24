@@ -4,3 +4,7 @@ proto:
         proto/v1/message.proto
 server:
 	go run cmd/app/main.go
+
+
+test:
+	go test -v ./internal/...

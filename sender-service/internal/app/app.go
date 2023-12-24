@@ -41,8 +41,8 @@ func Run(cfg *config.Config, log *logger.Logger) error {
 
 	go errorHandler.ReadError(ctx)
 
-	msgService := kafkaService.NewMessageProducerHandler(log, cfg, kafkaProducer)
-
+	msgService := kafkaService.NewMessageProducerService(log, cfg, kafkaProducer)
+	
 	opts := []grpc.ServerOption{
 		grpc.ChainUnaryInterceptor(
 			interceptor.LoggerUnaryInterceptorServer(log),

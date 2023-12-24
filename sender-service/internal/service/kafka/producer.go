@@ -22,7 +22,7 @@ type messageProducerService struct {
 	kafkaProducer kafkaClient.Producer
 }
 
-func NewMessageProducerHandler(log *logger.Logger, cfg *config.Config, kafkaProducer kafkaClient.Producer) *messageProducerService {
+func NewMessageProducerService(log *logger.Logger, cfg *config.Config, kafkaProducer kafkaClient.Producer) *messageProducerService {
 	return &messageProducerService{
 		log:           log,
 		cfg:           cfg,

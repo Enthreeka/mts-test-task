@@ -65,7 +65,6 @@ func TestMessageHandler_CreateMessage(t *testing.T) {
 		msg     string
 		res     *pb.MessageResponse
 		errCode codes.Code
-		errMsg  string
 	}{
 		{
 			name: "ok",
@@ -76,14 +75,12 @@ func TestMessageHandler_CreateMessage(t *testing.T) {
 				MsgUUID:     uuid.New().String(),
 			},
 			errCode: codes.OK,
-			errMsg:  "",
 		},
 		{
 			name:    "empty result",
 			msg:     "",
 			res:     &pb.MessageResponse{},
 			errCode: codes.InvalidArgument,
-			errMsg:  "CreateMessage:",
 		},
 	}
 
@@ -105,9 +102,10 @@ func TestMessageHandler_CreateMessage(t *testing.T) {
 			if response != nil {
 				assert.Equal(t, tt.res.Message, response.Message)
 			}
+
 			if err, ok := status.FromError(err); ok {
 				if err.Code() != tt.errCode {
-					t.Error("error code: expected", codes.InvalidArgument, "received", err.Code())
+					t.Error("error code: expected", tt.errCode, "received", err.Code())
 				}
 			}
 		})

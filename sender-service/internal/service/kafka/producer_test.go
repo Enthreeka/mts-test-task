@@ -2,43 +2,102 @@ package kafka
 
 import (
 	"context"
-	"github.com/orlangure/gnomock"
-	"github.com/orlangure/gnomock/preset/kafka"
-	kafkaclient "github.com/segmentio/kafka-go"
-	"github.com/stretchr/testify/require"
-	"os"
+	"encoding/json"
+	"github.com/Entreeka/sender/internal/config"
+	"github.com/Entreeka/sender/internal/entity"
+	"github.com/Entreeka/sender/pkg/kafka"
+	"github.com/Entreeka/sender/pkg/logger"
+	"github.com/google/uuid"
 	"testing"
 	"time"
 )
 
 func TestMessageProducerService_CreateHandler(t *testing.T) {
 	t.Parallel()
+	log := logger.New()
 
-	p := kafka.Preset(
-		kafka.WithTopics("main", "error"))
+	cfg := &config.Config{
+		Kafka: config.Kafka{
+			Topic:      "Test",
+			TopicError: "TopicError",
+			Brokers:    []string{"localhost:9092"},
+		},
+	}
 
-	container, err := gnomock.Start(p,
-		gnomock.WithDebugMode(),
-		gnomock.WithLogWriter(os.Stdout),
-		gnomock.WithContainerName("kafka"))
-	require.NoError(t, err)
+	kafkaProducer := kafka.NewProducer(log, cfg.Kafka.Brokers, cfg.Kafka.Topic)
+	defer kafkaProducer.Close()
 
-	defer func() {
-		require.NoError(t, gnomock.Stop(container))
-	}()
+	msgService := NewMessageProducerService(log, cfg, kafkaProducer)
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
-	defer cancel()
+	tests := []struct {
+		name  string
+		topic string
+		msg   *entity.Message
+	}{
+		{
+			name:  "ok1",
+			topic: "Test",
+			msg: &entity.Message{
+				Msg:         "test msg",
+				CreatedTime: time.Now(),
+				MsgUUID:     uuid.New(),
+			},
+		},
+		{
+			name:  "ok2",
+			topic: "Test",
+			msg: &entity.Message{
+				Msg:         "test msg14124124",
+				CreatedTime: time.Now(),
+				MsgUUID:     uuid.New(),
+			},
+		},
+		{
+			name:  "ok3",
+			topic: "Test",
+			msg: &entity.Message{
+				Msg:         "test msg141246456456124",
+				CreatedTime: time.Now(),
+				MsgUUID:     uuid.New(),
+			},
+		},
+	}
 
-	alertsReader := kafkaclient.NewReader(kafkaclient.ReaderConfig{
-		Brokers: []string{container.Address(kafka.BrokerPort)},
-		Topic:   "main",
-	})
+	for _, tt := range tests {
+		t.Log(tt.msg)
+		msgService.CreateHandler(context.Background(), tt.msg)
+	}
 
-	m, err := alertsReader.ReadMessage(ctx)
-	require.NoError(t, err)
-	require.NoError(t, alertsReader.Close())
+	reader := kafka.NewKafkaReader(cfg.Kafka.Brokers, cfg.Kafka.Topic)
+	defer reader.Close()
 
-	require.Equal(t, "CPU", string(m.Key))
-	require.Equal(t, "92", string(m.Value))
+	timeout := time.After(10 * time.Second)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			for {
+				select {
+				case <-timeout:
+					t.Fatal("Timeout waiting for messages")
+				default:
+					msg, err := reader.FetchMessage(context.Background())
+					if err != nil {
+						time.Sleep(100 * time.Millisecond)
+						continue
+					}
+
+					messageModel := &entity.Message{}
+					err = json.Unmarshal(msg.Value, messageModel)
+					if err != nil {
+						t.Error(err)
+					}
+
+					if tt.topic == msg.Topic && tt.msg.Msg == messageModel.Msg {
+						return
+					}
+
+					time.Sleep(100 * time.Millisecond)
+				}
+			}
+		})
+	}
 }
