@@ -24,7 +24,6 @@ func (m *messageRepo) Create(ctx context.Context, message *entity.Message) error
 	if err != nil {
 		return err
 	}
-
 	defer func() {
 		if err != nil {
 			tx.Rollback(ctx)

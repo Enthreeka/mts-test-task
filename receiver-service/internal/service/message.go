@@ -21,7 +21,7 @@ func NewMessageService(messageRepo repo.Message) Message {
 
 func (m *messageService) Create(ctx context.Context, message *entity.Message) error {
 	err := m.messageRepo.Create(ctx, message)
-	if err != nil {
+	if err != nil { // Сделать обработку ошибок при транзакции
 		if err == pgx.ErrNoRows {
 			return apperror.ErrNoRows
 		}

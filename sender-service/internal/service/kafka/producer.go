@@ -31,12 +31,13 @@ func NewMessageProducerService(log *logger.Logger, cfg *config.Config, kafkaProd
 }
 
 func (m *messageProducerService) CreateHandler(ctx context.Context, message *entity.Message) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
 	msgBytes, err := json.Marshal(&message)
 	if err != nil {
 		m.log.Error("json.Marshal: %v", err)
+		return err
 	}
 
 	msg := kafka.Message{
