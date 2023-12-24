@@ -42,6 +42,8 @@ func NewMessageConsumerHandler(msgService service.Message, kafkaProducer kafkaSe
 	}
 }
 
+// Как вариант можно реализовать consumer_group, в которой будет реализован пул воркеров для параллельной обработки данных.
+
 func (m *messageHandler) Consumer(ctx context.Context, wg *sync.WaitGroup) {
 	defer func() {
 		wg.Done()
@@ -52,10 +54,8 @@ func (m *messageHandler) Consumer(ctx context.Context, wg *sync.WaitGroup) {
 
 	for {
 		select {
-
 		case <-ctx.Done():
 			return
-
 		default:
 			msg, err := m.kafkaConsumer.FetchMessage(ctx)
 			if err != nil {

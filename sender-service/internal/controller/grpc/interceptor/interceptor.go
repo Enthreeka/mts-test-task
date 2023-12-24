@@ -8,7 +8,7 @@ import (
 
 func LoggerUnaryInterceptorServer(log *logger.Logger) grpc.UnaryServerInterceptor {
 	return func(ctx context.Context, req any, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (any, error) {
-		log.Info("Received request: %v, %s", req, info.FullMethod)
+		log.Info("[SENDER-SERVICE] Received request: %v, %s", req, info.FullMethod)
 		resp, err := handler(ctx, req)
 		return resp, err
 	}

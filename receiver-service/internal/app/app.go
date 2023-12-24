@@ -10,11 +10,17 @@ import (
 	"github.com/Entreeka/receiver/pkg/kafka"
 	"github.com/Entreeka/receiver/pkg/logger"
 	"github.com/Entreeka/receiver/pkg/postgres"
+	"os"
+	"os/signal"
 	"sync"
+	"syscall"
 )
 
 func Run(cfg *config.Config, log *logger.Logger) error {
-	psql, err := postgres.New(context.Background(), 5, cfg.Postgres.URL)
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM, syscall.SIGINT)
+	defer cancel()
+
+	psql, err := postgres.New(ctx, 5, cfg.Postgres.URL)
 	if err != nil {
 		log.Fatal("failed to connect PostgreSQL: %v", err)
 	}
@@ -25,7 +31,7 @@ func Run(cfg *config.Config, log *logger.Logger) error {
 
 	defer producer.Close()
 
-	conn, err := kafka.New(context.Background())
+	conn, err := kafka.New(ctx)
 	if err != nil {
 		log.Fatal("failed to dial leader: %v", err)
 	}
@@ -43,7 +49,7 @@ func Run(cfg *config.Config, log *logger.Logger) error {
 	wg := &sync.WaitGroup{}
 
 	wg.Add(1)
-	go handler.Consumer(context.Background(), wg)
+	go handler.Consumer(ctx, wg)
 	wg.Wait()
 
 	return nil
