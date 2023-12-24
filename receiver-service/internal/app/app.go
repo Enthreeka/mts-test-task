@@ -19,7 +19,11 @@ func Run(cfg *config.Config, log *logger.Logger) error {
 		log.Fatal("failed to connect PostgreSQL: %v", err)
 	}
 
+	defer psql.Close()
+
 	producer := kafka.NewProducer(log, cfg.Kafka.Brokers, cfg.Kafka.TopicError)
+
+	defer producer.Close()
 
 	conn, err := kafka.New(context.Background())
 	if err != nil {
@@ -32,11 +36,8 @@ func Run(cfg *config.Config, log *logger.Logger) error {
 	}
 	log.Info("kafka connected to brokers: %+v", brokers)
 
-	defer psql.Close()
-
 	messageRepo := repo.NewMessageRepo(psql)
 	messageService := service.NewMessageService(messageRepo)
-
 	errProducerService := kafkaService.NewErrorProducerService(log, cfg, producer)
 	handler := kafkaClient.NewMessageConsumerHandler(messageService, errProducerService, log, cfg)
 	wg := &sync.WaitGroup{}
